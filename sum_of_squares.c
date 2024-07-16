@@ -3,6 +3,8 @@
 #include <pthread.h>
 #include <sys/time.h>
 
+int MAX_WORKERS = 16;
+
 typedef struct {
     unsigned long long start;
     unsigned long long end;
@@ -13,15 +15,17 @@ typedef struct {
 void* compute_sum_of_squares(void* arg) {
     ThreadData* data = (ThreadData*)arg;
     struct timeval start_time, end_time;
+    long long result = 0;
 
     gettimeofday(&start_time, NULL);
     data->result = 0;
     for (long i = data->start; i <= data->end; ++i) {
-        data->result += (unsigned long long)i * i;
+        result += (unsigned long long)i * i;
     }
     gettimeofday(&end_time, NULL);
     data->time_taken = (end_time.tv_sec - start_time.tv_sec) +
                        (end_time.tv_usec - start_time.tv_usec) / 1000000.0;
+    data->result = result;
 
     pthread_exit(NULL);
 }
@@ -52,22 +56,25 @@ double work(int num_workers, unsigned long long start_num, unsigned long long en
 }
 
 int main(int argc, char* argv[]) {
-    pthread_t threads[32];
-    ThreadData thread_data[32];
+    pthread_t threads[MAX_WORKERS];
+    ThreadData thread_data[MAX_WORKERS];
     double total_worker_time = 0;
     unsigned long long total_work_done = 0;
     double total_time = 0;
     unsigned long long start_num = 100L;
     unsigned long long end_num = 5000000000UL;
 
-    for(int i =1; i < 32; i++) {
+    for(int i = 1; i <= MAX_WORKERS; i++) {
+        double iteration_worker_time = 0;
         double total_time_inner = work(i, start_num, end_num, threads, thread_data);
-        printf("Time for %d workers: %f\n", i, total_time_inner);
         total_time += total_time_inner;
         for (int j = 0; j < i; j++) {
+            iteration_worker_time += thread_data[j].time_taken;;
             total_work_done += thread_data[j].result;
             total_worker_time += thread_data[j].time_taken;
         }
+        printf("Time for %d workers (wall time, total workers time): %f / %f\n",
+            i, total_time_inner, iteration_worker_time);
     }
 
     printf("Total work done (sum of squares from %llu to %llu): %llu\n", start_num, end_num, total_work_done);
