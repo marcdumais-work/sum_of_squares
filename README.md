@@ -12,6 +12,12 @@ gcc -O1 -pthread -o sum_of_squares sum_of_squares.c
 gcc -pthread -o sum_of_squares sum_of_squares.c
 ```
 
+One can simply run 
+
+```bash
+make
+```
+
 ## Execute
 
 ```bash

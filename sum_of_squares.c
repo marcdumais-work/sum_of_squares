@@ -44,8 +44,6 @@ double work(int num_workers, unsigned long long start_num, unsigned long long en
         pthread_create(&threads[i], NULL, compute_sum_of_squares, &thread_data[i]);
     }
 
-    double total_worker_time = 0;
-
     for (int i = 0; i < num_workers; ++i) {
         pthread_join(threads[i], NULL);
     }
@@ -59,8 +57,8 @@ int main(int argc, char* argv[]) {
     pthread_t threads[MAX_WORKERS];
     ThreadData thread_data[MAX_WORKERS];
     double total_worker_time = 0;
-    unsigned long long total_work_done = 0;
     double total_time = 0;
+    unsigned long long total_work_done = 0;
     unsigned long long start_num = 100L;
     unsigned long long end_num = 5000000000UL;
 
